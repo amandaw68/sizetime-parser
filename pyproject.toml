@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sizetime"
+version = "0.1.0"
+description = "Parse and format byte sizes and durations, with parse errors that point at the exact character"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "amandaw68" }]
+
+[tool.setuptools.packages.find]
+include = ["sizetime*"]
