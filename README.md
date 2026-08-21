@@ -35,6 +35,7 @@ parse_size("100")          # -> 100 (a bare number is a byte count)
 
 parse_duration("250ms")    # -> 0.25
 parse_duration("1.5h")     # -> 5400.0
+parse_duration("1h30m20s") # -> 5420.0
 
 format_size(1_500_000)                # -> "1.5MB"
 format_size(1_500_000, binary=True)   # -> "1.4MiB"
@@ -61,12 +62,14 @@ Sizes: `B`, `KB`/`MB`/`GB`/`TB`/`PB` (decimal, powers of 1000),
 
 Durations: `ns`, `us`, `ms`, `s`, `m`, `h`, `d`. Unlike sizes, the unit
 is mandatory -- a bare `5` is ambiguous, so it's rejected rather than
-guessed at.
+guessed at. Segments can be chained into a compound literal, largest
+unit first and with no space between them: `1h30m20s`. Units must
+strictly decrease and none may repeat, so `1m1h` and `1h1h` are both
+rejected.
 
 ## Status
 
-Early. Compound durations (`1h30m20s`) aren't supported yet -- see the
-roadmap below.
+Early. No test suite yet, and the API surface is still settling.
 
 ## Install
 
