@@ -42,6 +42,25 @@ format_size(1_500_000, binary=True)   # -> "1.4MiB"
 format_duration(90)                   # -> "1.50m"
 ```
 
+For a whole config file at once, `parse_settings` takes a schema mapping
+each expected key to a parser (`parse_size`, `parse_duration`, or your
+own) and returns a dict, with errors pointing at the exact line in the
+file rather than just the value that failed:
+
+```python
+from sizetime import parse_settings, parse_size, parse_duration
+
+config = parse_settings(
+    open("app.conf").read(),
+    {"max_upload_size": parse_size, "poll_interval": parse_duration},
+)
+# -> {"max_upload_size": 50000000, "poll_interval": 0.2}
+```
+
+Lines are `key: value` or `key = value`; blank lines and lines starting
+with `#` are ignored. Unknown keys, repeated keys, and missing keys are
+all reported as `ParseError`s.
+
 Every parse error is a `sizetime.ParseError` (a `ValueError` subclass)
 carrying `.line`, `.column`, and `.message`. A caller embedding one of
 these values inside a larger document -- a config file, a template --
