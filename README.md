@@ -88,7 +88,8 @@ rejected.
 
 ## Status
 
-Early. No test suite yet, and the API surface is still settling.
+Early, API surface still settling. Tests live in `tests/` and run with
+`python -m unittest discover`.
 
 ## Install
 
