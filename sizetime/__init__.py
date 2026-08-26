@@ -4,9 +4,12 @@ from .durations import format_duration, parse_duration
 from .errors import ParseError
 from .settings import parse_settings
 from .sizes import format_size, parse_size
+from .values import Duration, Size
 
 __all__ = [
+    "Duration",
     "ParseError",
+    "Size",
     "format_duration",
     "format_size",
     "parse_duration",

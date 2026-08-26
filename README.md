@@ -42,6 +42,26 @@ format_size(1_500_000, binary=True)   # -> "1.4MiB"
 format_duration(90)                   # -> "1.50m"
 ```
 
+`Size` and `Duration` wrap the parsed number so it keeps its unit context
+past the point where you'd otherwise be looking at a bare int or float.
+They're immutable, comparable, hashable, and support the arithmetic you'd
+expect -- add two, scale one by a factor, or divide one by another to get
+a ratio:
+
+```python
+from sizetime import Duration, Size
+
+upload_limit = Size.parse("50MB")
+if Size(len(payload)) > upload_limit:
+    raise ValueError(f"payload too large: {Size(len(payload))} > {upload_limit}")
+
+total = Duration.parse("1h30m") + Duration.parse("15m")  # -> Duration(6300.0)
+```
+
+Both types stay non-negative: constructing one below zero, or subtracting
+a larger value from a smaller one, raises `ValueError`, the same as
+`format_size` and `format_duration` do today.
+
 For a whole config file at once, `parse_settings` takes a schema mapping
 each expected key to a parser (`parse_size`, `parse_duration`, or your
 own) and returns a dict, with errors pointing at the exact line in the
