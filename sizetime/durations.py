@@ -9,6 +9,11 @@ Segments can be chained into a compound literal, largest unit first, with
 no separator between them: "1h30m20s". Units must strictly decrease and
 none may repeat, so "1m1h" and "1h1h" are both rejected -- allowing them
 would just invite a value that reads one way and sums another.
+
+A single leading "-" negates the whole literal, e.g. "-1h30m" is thirty
+minutes before zero. The sign applies once, up front -- there is no such
+thing as "-1h-30m", since a sign on every segment would just raise the
+question of what a mixed-sign literal like "-1h30m" is supposed to mean.
 """
 
 from __future__ import annotations
@@ -45,7 +50,8 @@ def parse_duration(text: str, *, source_name: str = "<string>") -> float:
 
     A compound literal is a sequence of number+unit segments glued together
     with no space between them, written largest unit first ("1h30m", not
-    "30m1h" or "1h 30m").
+    "30m1h" or "1h 30m"). A single leading "-" negates the whole literal
+    ("-1h30m").
 
     Raises ParseError, with a caret pointing at the exact offending
     character, for empty input, a malformed number, a missing or unknown
@@ -58,6 +64,11 @@ def parse_duration(text: str, *, source_name: str = "<string>") -> float:
     expected = ", ".join(sorted(_UNITS_TO_SECONDS))
 
     pos = _skip_spaces(text, 0)
+    negative = False
+    if pos < len(text) and text[pos] == "-":
+        negative = True
+        pos += 1
+
     total = 0.0
     seen_units: list[str] = []
 
@@ -121,25 +132,28 @@ def parse_duration(text: str, *, source_name: str = "<string>") -> float:
                 pos,
                 source_name,
             )
-        return total
+        return -total if negative else total
 
 
 def format_duration(seconds: float) -> str:
     """Format a number of seconds as a human-readable duration string.
 
     Picks the largest unit that keeps the displayed number at least 1, so
-    results read naturally ("1.50h" rather than "5400.00s").
+    results read naturally ("1.50h" rather than "5400.00s"). Negative
+    values get a leading "-" ("-1.50h"); the magnitude is formatted the
+    same way as a positive one.
     """
-    if seconds < 0:
-        raise ValueError("durations cannot be negative")
     if seconds == 0:
         return "0s"
 
-    for unit, unit_seconds in _FORMAT_UNITS:
-        if seconds >= unit_seconds:
-            return f"{seconds / unit_seconds:.2f}{unit}"
+    sign = "-" if seconds < 0 else ""
+    magnitude = abs(seconds)
 
-    return f"{seconds / 1e-9:.2f}ns"
+    for unit, unit_seconds in _FORMAT_UNITS:
+        if magnitude >= unit_seconds:
+            return f"{sign}{magnitude / unit_seconds:.2f}{unit}"
+
+    return f"{sign}{magnitude / 1e-9:.2f}ns"
 
 
 def _skip_spaces(text: str, pos: int) -> int:

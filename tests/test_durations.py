@@ -75,6 +75,36 @@ class ParseDurationTests(unittest.TestCase):
             parse_duration("abcs")
         self.assertEqual(ctx.exception.offset, 0)
 
+    def test_negative_sign(self):
+        self.assertEqual(parse_duration("-5s"), -5.0)
+        self.assertEqual(parse_duration("-1h30m"), -5400.0)
+
+    def test_negative_sign_after_leading_whitespace(self):
+        self.assertEqual(parse_duration("  -5s"), -5.0)
+
+    def test_negative_zero_is_zero(self):
+        self.assertEqual(parse_duration("-0s"), 0.0)
+
+    def test_bare_sign_is_an_error(self):
+        with self.assertRaises(ParseError) as ctx:
+            parse_duration("-")
+        self.assertIn("expected a number", ctx.exception.message)
+        self.assertEqual(ctx.exception.offset, 1)
+
+    def test_double_sign_is_an_error(self):
+        with self.assertRaises(ParseError) as ctx:
+            parse_duration("--5s")
+        self.assertIn("expected a number", ctx.exception.message)
+        self.assertEqual(ctx.exception.offset, 1)
+
+    def test_sign_may_not_repeat_per_segment(self):
+        # the sign only applies once, up front -- a "-" before a later
+        # segment is trailing garbage, not a second negation
+        with self.assertRaises(ParseError) as ctx:
+            parse_duration("-1h-30m")
+        self.assertIn("unexpected text", ctx.exception.message)
+        self.assertEqual(ctx.exception.offset, 3)
+
     def test_error_message_is_self_contained(self):
         try:
             parse_duration("1m1h")
@@ -99,9 +129,15 @@ class FormatDurationTests(unittest.TestCase):
     def test_falls_back_to_nanoseconds_below_microsecond(self):
         self.assertEqual(format_duration(5e-10), "0.50ns")
 
-    def test_negative_is_an_error(self):
-        with self.assertRaises(ValueError):
-            format_duration(-1)
+    def test_negative_gets_a_leading_sign(self):
+        self.assertEqual(format_duration(-90), "-1.50m")
+        self.assertEqual(format_duration(-0.5), "-500.00ms")
+
+    def test_negative_zero_formats_as_zero(self):
+        self.assertEqual(format_duration(-0.0), "0s")
+
+    def test_round_trips_through_parse_duration(self):
+        self.assertEqual(format_duration(parse_duration("-1h30m")), "-1.50h")
 
 
 if __name__ == "__main__":

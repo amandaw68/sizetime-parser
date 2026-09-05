@@ -104,7 +104,10 @@ is mandatory -- a bare `5` is ambiguous, so it's rejected rather than
 guessed at. Segments can be chained into a compound literal, largest
 unit first and with no space between them: `1h30m20s`. Units must
 strictly decrease and none may repeat, so `1m1h` and `1h1h` are both
-rejected.
+rejected. A single leading `-` negates the whole literal (`-1h30m`);
+`format_duration` mirrors it back the same way (`-1.50h`). The `Duration`
+value type stays non-negative, so it only ever sees the unsigned side of
+`parse_duration`.
 
 ## Status
 

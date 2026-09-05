@@ -7,9 +7,11 @@ context and add the comparisons and arithmetic that come up once you're
 working with more than one value at a time -- is this upload under the
 limit, what's the total of these poll intervals, and so on.
 
-Both types stay non-negative, matching format_size and format_duration:
-negative sizes aren't meaningful, and negative durations need explicit
-sign handling that doesn't exist yet.
+Both types stay non-negative: negative sizes aren't meaningful, and a
+Duration that could go negative would need every arithmetic method here
+to decide what a negative result means (does subtraction clamp, wrap, or
+raise?). parse_duration and format_duration handle a signed "-1h30m" on
+their own for callers who need it; these wrappers just don't.
 """
 
 from __future__ import annotations
