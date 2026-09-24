@@ -60,7 +60,10 @@ total = Duration.parse("1h30m") + Duration.parse("15m")  # -> Duration(6300.0)
 
 Both types stay non-negative: constructing one below zero, or subtracting
 a larger value from a smaller one, raises `ValueError`, the same as
-`format_size` and `format_duration` do today.
+`format_size` already does for a negative byte count. `format_duration`
+is the exception -- it accepts a negative value on its own terms and
+mirrors the sign back (see Units below); it's the `Duration` wrapper
+that refuses to hold a negative result, not the bare function.
 
 For a whole config file at once, `parse_settings` takes a schema mapping
 each expected key to a parser (`parse_size`, `parse_duration`, or your
