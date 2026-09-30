@@ -122,6 +122,10 @@ class FormatDurationTests(unittest.TestCase):
         self.assertEqual(format_duration(90), "1.50m")
         self.assertEqual(format_duration(59), "59.00s")
         self.assertEqual(format_duration(60), "1.00m")
+        self.assertEqual(format_duration(59.999), "1.00m")
+        self.assertEqual(format_duration(59.994), "59.99s")
+        self.assertEqual(format_duration(0.999999), "1.00s")
+        self.assertEqual(format_duration(-3599.99), "-1.00h")
 
     def test_falls_back_to_smaller_units_for_small_values(self):
         self.assertEqual(format_duration(0.5), "500.00ms")

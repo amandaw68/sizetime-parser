@@ -101,12 +101,17 @@ def format_size(n_bytes: int, *, binary: bool = False) -> str:
     base = 1024 if binary else 1000
     suffixes = ["", "Ki", "Mi", "Gi", "Ti", "Pi"] if binary else ["", "K", "M", "G", "T", "P"]
 
+    if n_bytes < base:
+        return f"{int(n_bytes)}B"
+
     value = float(n_bytes)
-    for suffix in suffixes[:-1]:
-        if value < base:
-            return f"{int(value)}B" if suffix == "" else f"{value:.1f}{suffix}B"
+    index = 0
+    # Compare the value as it will be displayed, not the raw one: 999_999
+    # bytes is 999.999 KB, which prints as "1000.0KB" unless it rolls over.
+    while index < len(suffixes) - 1 and (index == 0 or float(f"{value:.1f}") >= base):
         value /= base
-    return f"{value:.1f}{suffixes[-1]}B"
+        index += 1
+    return f"{value:.1f}{suffixes[index]}B"
 
 
 def _skip_spaces(text: str, pos: int) -> int:

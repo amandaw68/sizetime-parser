@@ -39,6 +39,7 @@ _FORMAT_UNITS = (
     ("s", 1.0),
     ("ms", 1e-3),
     ("us", 1e-6),
+    ("ns", 1e-9),
 )
 
 _NUMBER_RE = re.compile(r"[0-9]+(?:\.[0-9]+)?")
@@ -149,11 +150,22 @@ def format_duration(seconds: float) -> str:
     sign = "-" if seconds < 0 else ""
     magnitude = abs(seconds)
 
-    for unit, unit_seconds in _FORMAT_UNITS:
+    index = len(_FORMAT_UNITS) - 1
+    for i, (_, unit_seconds) in enumerate(_FORMAT_UNITS):
         if magnitude >= unit_seconds:
-            return f"{sign}{magnitude / unit_seconds:.2f}{unit}"
+            index = i
+            break
 
-    return f"{sign}{magnitude / 1e-9:.2f}ns"
+    # If rounding to two places would print the next unit's threshold
+    # (59.999s -> "60.00s"), use the larger unit instead.
+    if index > 0:
+        unit_seconds = _FORMAT_UNITS[index][1]
+        ratio = round(_FORMAT_UNITS[index - 1][1] / unit_seconds)
+        if float(f"{magnitude / unit_seconds:.2f}") >= ratio:
+            index -= 1
+
+    unit, unit_seconds = _FORMAT_UNITS[index]
+    return f"{sign}{magnitude / unit_seconds:.2f}{unit}"
 
 
 def _skip_spaces(text: str, pos: int) -> int:

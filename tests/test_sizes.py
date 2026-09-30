@@ -101,6 +101,14 @@ class FormatSizeTests(unittest.TestCase):
     def test_binary_rollover(self):
         self.assertEqual(format_size(1_500_000, binary=True), "1.4MiB")
 
+    def test_rounding_up_to_the_base_rolls_into_the_next_unit(self):
+        self.assertEqual(format_size(999_999), "1.0MB")
+        self.assertEqual(format_size(999_949), "999.9KB")
+        self.assertEqual(format_size(1024**2 - 1, binary=True), "1.0MiB")
+
+    def test_largest_unit_does_not_roll_over(self):
+        self.assertEqual(format_size(1000**5 * 2000), "2000.0PB")
+
     def test_negative_is_an_error(self):
         with self.assertRaises(ValueError):
             format_size(-1)

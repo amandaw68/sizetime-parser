@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `format_size` and `format_duration` no longer print a value that rounds
+  up to the next unit's threshold, such as `1000.0KB` or `60.00s`; they
+  use the larger unit instead (`1.0MB`, `1.00m`).
+
 ## 0.1.0
 
 First release.
